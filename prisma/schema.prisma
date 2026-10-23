@@ -1,0 +1,121 @@
+generator client {
+  provider = "prisma-client"
+  output   = "../lib/generated/prisma" 
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+// Kullanıcı Rolleri
+enum Role {
+  VISITOR
+  COMPANY
+  ADMIN
+}
+
+// Kullanıcı Modeli
+model User {
+  id            String    @id @default(cuid())
+  name          String?
+  email         String?   @unique
+  emailVerified DateTime?
+  image         String?
+  password      String?   // Şifreli giriş yapanlar için (Hashlenmiş)
+  role          Role      @default(VISITOR)
+  
+  accounts      Account[]
+  sessions      Session[]
+  company       Company?  
+  scores        Score[]   
+  
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+}
+
+// Şirket Modeli (Stantlar)
+model Company {
+  id          String   @id @default(cuid())
+  name        String
+  description String?
+  logoUrl     String?
+  qrCode      String?  
+  userId      String   @unique 
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  quizzes     Quiz[]
+  
+  createdAt   DateTime @default(now())
+}
+
+// Quiz Modeli
+model Quiz {
+  id          String   @id @default(cuid())
+  title       String
+  companyId   String
+  company     Company  @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  
+  questions   Question[]
+  scores      Score[]
+  
+  createdAt   DateTime @default(now())
+}
+
+// Soru Modeli
+model Question {
+  id            String   @id @default(cuid())
+  quizId        String
+  quiz          Quiz     @relation(fields: [quizId], references: [id], onDelete: Cascade)
+  
+  text          String
+  options       String[] 
+  correctAnswer Int    
+}
+
+// Ziyaretçi Puanları
+model Score {
+  id          String   @id @default(cuid())
+  userId      String
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  quizId      String
+  quiz        Quiz     @relation(fields: [quizId], references: [id], onDelete: Cascade)
+  
+  points      Int
+  createdAt   DateTime @default(now())
+}
+
+// Aşağıdakiler Auth.js (NextAuth) için gerekli standart tablolar
+model Account {
+  id                String  @id @default(cuid())
+  userId            String
+  type              String
+  provider          String
+  providerAccountId String
+  refresh_token     String? @db.Text
+  access_token      String? @db.Text
+  expires_at        Int?
+  token_type        String?
+  scope             String?
+  id_token          String? @db.Text
+  session_state     String?
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerAccountId])
+}
+
+model Session {
+  id           String   @id @default(cuid())
+  sessionToken String   @unique
+  userId       String
+  expires      DateTime
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model VerificationToken {
+  identifier String
+  token      String   @unique
+  expires    DateTime
+
+  @@unique([identifier, token])
+}

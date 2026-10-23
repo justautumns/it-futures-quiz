@@ -1,36 +1,85 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# IT Futures Event App - Digital Scavenger Hunt
 
-## Getting Started
+A web-based gamification tool for the IT Futures fair. Visitors scan QR codes at company booths, engage in conversations with staff, answer quizzes, and earn points. The most successful participants win prizes.
 
-First, run the development server:
+## 🚀 Tech Stack
 
-```bash
+- **Framework:** Next.js 16 (App Router)
+- **Language:** TypeScript
+- **Styling:** Tailwind CSS + shadcn/ui
+- **Authentication:** Auth.js (NextAuth)
+- **Database ORM:** Prisma
+- **Database:** PostgreSQL (running in Docker)
+- **Containerization:** Docker & Docker Compose
+
+## 📋 Prerequisites
+
+Before you begin, ensure you have the following installed:
+- [Node.js](https://nodejs.org/) (v20 or higher)
+- [Docker](https://www.docker.com/) & Docker Compose
+- [Git](https://git-scm.com/)
+
+## 🛠️ Local Setup Instructions
+
+1. **Clone the repository:**
+   ```bash
+   git clone https://github.com/YOUR_USERNAME/YOUR_REPO_NAME.git
+   cd YOUR_REPO_NAME
+Install dependencies:
+
+bash
+npm install
+Set up environment variables:
+Copy the example environment file:
+
+bash
+cp .env.example .env
+Open .env and fill in the required values:
+
+DATABASE_URL: The PostgreSQL connection string (default is provided for Docker setup).
+
+AUTH_SECRET: A random string used by Auth.js to encrypt sessions. You can generate one with npx auth secret.
+
+AUTH_GOOGLE_ID & AUTH_GOOGLE_SECRET: (Optional) For Google login.
+
+Start the PostgreSQL database via Docker:
+
+bash
+docker compose up -d
+This will start a PostgreSQL container in the background.
+
+Initialize the database with Prisma:
+
+bash
+npx prisma generate
+npx prisma migrate dev --name init
+This generates the Prisma client and creates the necessary database tables.
+
+Start the development server:
+
+bash
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
-```
+Access the application:
+Open your browser and navigate to http://localhost:3000.
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+📂 Project Structure
+text
+├── app/                  # Next.js App Router (pages and API routes)
+├── components/           # Reusable React components (UI, auth, layout)
+├── lib/                  # Utility functions, Prisma client, Auth config
+├── prisma/               # Database schema and migrations
+├── public/               # Static assets
+├── types/                # TypeScript type definitions
+├── docker-compose.yml    # Docker configuration for PostgreSQL
+└── .env.example          # Example environment variables
+🔐 Security Notes
+Passwords are hashed using bcryptjs before being stored in the database.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+The AUTH_SECRET must be kept secure and never committed to version control.
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+The .env file is ignored by Git to prevent leaking sensitive credentials.
 
-## Learn More
+Quiz answers are validated on the server-side to prevent cheating.
 
-To learn more about Next.js, take a look at the following resources:
-
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
-
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+📝 License
+This project is developed for the IT Futures fair. All rights reserved

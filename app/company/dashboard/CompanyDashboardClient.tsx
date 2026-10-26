@@ -20,14 +20,14 @@ export default function CompanyDashboardClient({ company }: { company: Company }
 
   // WebSocket Bağlantısını Başlat (Sadece bir kez)
   useEffect(() => {
-    // Eğer bağlantı zaten varsa veya kuruluyorsa, tekrar deneme
     if (wsRef.current && (wsRef.current.readyState === WebSocket.OPEN || wsRef.current.readyState === WebSocket.CONNECTING)) {
       return;
     }
 
     const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
-    const hostname = window.location.hostname;
-    const wsUrl = `${protocol}//${hostname}:8080`;
+    
+    // Nginx üzerinden WebSocket bağlantısı (port belirtmeye gerek yok, Nginx yönlendiriyor)
+    const wsUrl = `${protocol}//${window.location.host}/ws`;
     
     console.log("Connecting to WebSocket at:", wsUrl);
     

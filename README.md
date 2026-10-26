@@ -101,6 +101,12 @@ Passwords (if used) are hashed using bcryptjs before being stored.
 
 The AUTH_SECRET must be kept secure and never committed to version control.
 
+For Auth system temporary magic code are created to check it use "docker compose logs web"
+
+To Check if web socket succesfully connected "docker compose logs -f ws"
+
+To Make sure no cache docker compose build --no-cache
+
 The .env file is ignored by Git to prevent leaking sensitive credentials.
 
 Quiz answers are validated on the server-side (/api/quiz/check-answer) to prevent cheating via client-side inspection.

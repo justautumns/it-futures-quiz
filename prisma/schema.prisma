@@ -21,7 +21,11 @@ model User {
   email         String?   @unique
   emailVerified DateTime?
   image         String?
-  password      String?   // Şifreli giriş yapanlar için (Hashlenmiş)
+  // password      String?   <-- Şifre kullanmayacağımız için silebiliriz
+  
+  // YENİ EKLENEN ALAN: Gelecekte iletişim kurma izni
+  marketingConsent Boolean @default(false)
+  
   role          Role      @default(VISITOR)
   
   accounts      Account[]
@@ -34,17 +38,16 @@ model User {
 }
 
 // Şirket Modeli (Stantlar)
+
 model Company {
   id          String   @id @default(cuid())
   name        String
   description String?
-  logoUrl     String?
-  qrCode      String?  
-  userId      String   @unique 
+  logoUrl     String?  // <-- Logo dosyasının yolu burada tutulacak
+  qrCode      String?
+  userId      String   @unique
   user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  
   quizzes     Quiz[]
-  
   createdAt   DateTime @default(now())
 }
 

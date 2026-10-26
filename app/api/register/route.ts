@@ -1,45 +1,47 @@
 import { NextResponse } from "next/server";
-import bcrypt from "bcryptjs";
 import { prisma } from "@/lib/db";
-import { registerSchema } from "@/lib/validations";
 
 export async function POST(req: Request) {
   try {
-    const body = await req.json();
+    const { name, email, marketingConsent } = await req.json();
+
+    if (!name || !email) {
+      return NextResponse.json({ message: "Name and email are required" }, { status: 400 });
+    }
+
+    let user = await prisma.user.findUnique({ where: { email } });
+
+    if (!user) {
+      user = await prisma.user.create({
+        data: { name, email, marketingConsent: marketingConsent || false, role: "VISITOR" },
+      });
+    }
+
+    // 6 haneli kod üret
+    const code = Math.floor(100000 + Math.random() * 900000).toString();
     
-    // Zod ile doğrula
-    const result = registerSchema.safeParse(body);
-    if (!result.success) {
-      return NextResponse.json({ message: "Validation failed", errors: result.error.issues }, { status: 400 });
-    }
+    // Kodu veritabanına kaydet (10 dakika geçerli)
+    const expires = new Date(new Date().getTime() + 10 * 60 * 1000); // 10 dakika
 
-    const { name, email, password } = result.data;
+    // Önce aynı e-posta için eski kodu varsa sil
+    await prisma.verificationToken.deleteMany({ where: { identifier: email } });
 
-    // Kullanıcı var mı?
-    const existingUser = await prisma.user.findUnique({
-      where: { email },
-    });
-
-    if (existingUser) {
-      return NextResponse.json({ message: "User already exists" }, { status: 400 });
-    }
-
-    // Şifreyi hashle
-    const hashedPassword = await bcrypt.hash(password, 10);
-
-    // Kullanıcıyı veritabanına kaydet
-    const user = await prisma.user.create({
+    // Yeni kodu kaydet
+    await prisma.verificationToken.create({
       data: {
-        name,
-        email,
-        password: hashedPassword,
-        role: "VISITOR", // Role enum'da VISITOR olarak tanımlıydı
+        identifier: email,
+        token: code,
+        expires: expires,
       },
     });
 
-    return NextResponse.json({ message: "User created successfully", userId: user.id }, { status: 201 });
+    console.log(`\n=========================================`);
+    console.log(`🔑 LOGIN CODE FOR ${email}: ${code}`);
+    console.log(`=========================================\n`);
+
+    return NextResponse.json({ message: "Code generated successfully" }, { status: 201 });
   } catch (error) {
-    console.error("Register error details:", error); // Terminale detaylı hatayı yazdır
+    console.error("Register error:", error);
     return NextResponse.json({ message: "Internal server error" }, { status: 500 });
   }
 }

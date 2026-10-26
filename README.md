@@ -10,57 +10,80 @@ A web-based gamification tool for the IT Futures fair. Visitors scan QR codes at
 - **Authentication:** Auth.js (NextAuth)
 - **Database ORM:** Prisma
 - **Database:** PostgreSQL (running in Docker)
+- **Real-time:** WebSocket (ws)
 - **Containerization:** Docker & Docker Compose
 
 ## 📋 Prerequisites
 
-Before you begin, ensure you have the following installed:
-- [Node.js](https://nodejs.org/) (v20 or higher)
-- [Docker](https://www.docker.com/) & Docker Compose
-- [Git](https://git-scm.com/)
+Before you begin, ensure you have the following installed on your system:
+- Node.js (v20 or higher)
+- Docker & Docker Compose
+- Git
 
 ## 🛠️ Local Setup Instructions
 
-1. **Clone the repository:**
-   ```bash
-   git clone https://github.com/YOUR_USERNAME/YOUR_REPO_NAME.git
-   cd YOUR_REPO_NAME
-Install dependencies:
+Follow these steps exactly in order to get the application running locally.
+
+Step 1: Clone the Repository
+Open your terminal and clone the project.
+```bash
+git clone https://github.com/YOUR_USERNAME/YOUR_REPO_NAME.git
+cd YOUR_REPO_NAME
+Step 2: Install Dependencies
+Install all required npm packages.
 
 bash
 npm install
-Set up environment variables:
-Copy the example environment file:
+Step 3: Set Up Environment Variables
+Copy the example environment file and configure it.
 
 bash
 cp .env.example .env
-Open .env and fill in the required values:
+Open the .env file and fill in the required values:
 
-DATABASE_URL: The PostgreSQL connection string (default is provided for Docker setup).
+DATABASE_URL: Use postgresql://user:password@localhost:5432/eventdb?schema=public for the local Docker setup.
 
-AUTH_SECRET: A random string used by Auth.js to encrypt sessions. You can generate one with npx auth secret.
+AUTH_SECRET: A random string used by Auth.js to encrypt sessions. Generate one using npx auth secret.
+
+AUTH_TRUST_HOST: Set to true.
 
 AUTH_GOOGLE_ID & AUTH_GOOGLE_SECRET: (Optional) For Google login.
 
-Start the PostgreSQL database via Docker:
+Step 4: Start the PostgreSQL Database via Docker
+Start the database container in the background.
 
 bash
 docker compose up -d
-This will start a PostgreSQL container in the background.
+Verify it is running:
 
-Initialize the database with Prisma:
+bash
+docker compose ps
+Step 5: Initialize the Database with Prisma
+Run the following commands sequentially to generate the Prisma client and apply all necessary migrations (including initial setup, consent fields, and logo fields).
 
 bash
 npx prisma generate
 npx prisma migrate dev --name init
-This generates the Prisma client and creates the necessary database tables.
+npx prisma migrate dev --name add_consent
+npx prisma migrate dev --name add_logo
+Step 6: Start the WebSocket Server
+The WebSocket server is required for real-time leaderboard updates. Open a new terminal window, navigate to the project directory, and run:
 
-Start the development server:
+bash
+npx tsx ws-server.ts
+Keep this terminal window open and running in the background.
+
+Step 7: Start the Next.js Development Server
+Return to your original terminal and start the Next.js server.
 
 bash
 npm run dev
-Access the application:
-Open your browser and navigate to http://localhost:3000.
+Step 8: Access the Application
+Open your browser and navigate to:
+
+Main App: http://localhost:3000
+
+Company Login: http://localhost:3000/company/login
 
 📂 Project Structure
 text
@@ -70,16 +93,17 @@ text
 ├── prisma/               # Database schema and migrations
 ├── public/               # Static assets
 ├── types/                # TypeScript type definitions
+├── ws-server.ts          # WebSocket server for real-time updates
 ├── docker-compose.yml    # Docker configuration for PostgreSQL
 └── .env.example          # Example environment variables
 🔐 Security Notes
-Passwords are hashed using bcryptjs before being stored in the database.
+Passwords (if used) are hashed using bcryptjs before being stored.
 
 The AUTH_SECRET must be kept secure and never committed to version control.
 
 The .env file is ignored by Git to prevent leaking sensitive credentials.
 
-Quiz answers are validated on the server-side to prevent cheating.
+Quiz answers are validated on the server-side (/api/quiz/check-answer) to prevent cheating via client-side inspection.
 
 📝 License
-This project is developed for the IT Futures fair. All rights reserved
+This project is developed for the IT Futures fair. All rights reserved.
